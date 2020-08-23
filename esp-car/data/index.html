@@ -1,0 +1,213 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="canvasjs.min.js"></script>
+<script src="joy.js"></script>
+</head>
+<body>
+<div id="joy1Div" style="width:200px;height:200px;margin:50px"></div>
+<script>
+var Joy1 = new JoyStick('joy1Div');
+var lastX = 0;
+var lastY = 0;
+
+setInterval(function(){ 
+let x = Joy1.GetX();
+let y = Joy1.GetX();
+if(x!=lastX || y !=lastY){
+	if("WebSocket" in window && ws.readyState == 1){
+		ws.send("{\"type\": \"controller\",\"steer\":"+x+", \"thrust\": "+y+"}");
+	}
+	lastX = x;
+	lastY = y;
+}
+
+}, 1/60*1000);
+window.onload = function() {
+
+var dataPoints = {
+	AccelX:[],
+	AccelY:[],
+	AccelZ:[],
+	GyroX:[],
+	GyroY:[],
+	GyroZ:[],
+	MagX:[],
+	MagY:[],
+	MagZ:[]
+};
+
+
+var accelChart = new CanvasJS.Chart("chartContainerAccel", {
+	theme: "light2",
+	title: {
+		text: "Accelerometer"
+	},
+	legend: {
+		cursor: "pointer",
+		verticalAlign: "top",
+		horizontalAlign: "center",
+		dockInsidePlotArea: true
+	},
+	toolTip: {
+		shared: true
+	},
+	data: [{
+		type: "line",
+		name: "X",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["AccelX"]
+	},{type: "line",
+		name: "Y",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["AccelY"]
+	},{type: "line",
+		name: "Z",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["AccelZ"]
+	}]
+});
+
+var gyroChart = new CanvasJS.Chart("chartContainerGyro", {
+	theme: "light2",
+	title: {
+		text: "Gyrometer"
+	},
+	legend: {
+		cursor: "pointer",
+		verticalAlign: "top",
+		horizontalAlign: "center",
+		dockInsidePlotArea: true
+	},
+	toolTip: {
+		shared: true
+	},
+	data: [{
+		type: "line",
+		name: "X",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["GyroX"]
+	},{type: "line",
+		name: "Y",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["GyroY"]
+	},{type: "line",
+		name: "Z",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["GyroZ"]
+	}]
+});
+
+var magChart = new CanvasJS.Chart("chartContainerMag", {
+	theme: "light2",
+	title: {
+		text: "Magnometer"
+	},
+	legend: {
+		cursor: "pointer",
+		verticalAlign: "top",
+		horizontalAlign: "center",
+		dockInsidePlotArea: true
+	},
+	toolTip: {
+		shared: true
+	},
+	data: [{
+		type: "line",
+		name: "X",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["MagX"]
+	},{type: "line",
+		name: "Y",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["MagY"]
+	},{type: "line",
+		name: "Z",
+		axisYType: "secondary",
+		showInLegend: true,
+		dataPoints: dataPoints["MagZ"]
+	}]
+});
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
+// Initial Values
+var i = 0
+
+function addData(values){
+
+	dataPoints["AccelX"].push({x: i, y: values["AccelX"]});
+	dataPoints["AccelY"].push({x: i, y: values["AccelY"]});
+	dataPoints["AccelZ"].push({x: i, y: values["AccelZ"]});
+	dataPoints["GyroX"].push({x: i, y: values["GyroX"]});
+	dataPoints["GyroY"].push({x: i, y: values["GyroY"]});
+	dataPoints["GyroZ"].push({x: i, y: values["GyroZ"]});
+	dataPoints["MagX"].push({x: i, y: values["MagX"]});
+	dataPoints["MagY"].push({x: i, y: values["MagY"]});
+	dataPoints["MagZ"].push({x: i, y: values["MagZ"]});
+	i=i+1;
+	if(i>100){
+		dataPoints["AccelX"].shift();
+		dataPoints["AccelY"].shift();
+		dataPoints["AccelZ"].shift();
+		dataPoints["GyroX"].shift();
+		dataPoints["GyroY"].shift();
+		dataPoints["GyroZ"].shift();
+		dataPoints["MagX"].shift();
+		dataPoints["MagY"].shift();
+		dataPoints["MagZ"].shift();
+	}
+	accelChart.render();
+	gyroChart.render();
+	magChart.render();
+
+
+}
+
+/*
+if ("WebSocket" in window) {
+	// Let us open a web socket
+	var ws = new WebSocket("ws://"+location.hostname+"/websocket");
+				
+        ws.onopen = function() {
+            
+            // Web Socket is connected, send data using send()
+            console.log("WS Connected.");
+        };
+				
+        ws.onmessage = function (evt) { 
+            var received_msg = evt.data;
+            console.log(received_msg);
+			const obj = JSON.parse(received_msg);
+			if(obj.type == "IMU"){
+				
+			}
+			
+        };
+		
+        ws.onclose = function() { 
+			console.log("Connection is closed..."); 
+        };
+} else {
+              
+	// The browser doesn't support WebSocket
+    alert("WebSocket NOT supported by your Browser!");
+}
+*/
+</script>
+<div id="chartContainerAccel" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>
+<div id="chartContainerGyro" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>
+<div id="chartContainerMag" style="height: 370px; max-width: 920px; margin: 0px auto;"></div>
+</body>
+</html>
